@@ -283,7 +283,7 @@ def error():
                 if (Hlt_Handle == True):
                     print("ERROR: Halt instruction is not the last instruction at line:", line)
                     return False
-
+            # checks for variable errors and shows the appropriate output
             if (ins[0] == "var"):
                 if (LabelCheck(ins[1]) == False):
                     print("ERROR: variable name is incorrect in line:", line)
