@@ -239,6 +239,7 @@ def parser(command):
 
 
 def LabelCheck(LabelName):
+    # checks if the name contains alphanum or underscore but no other character
     if re.match(r'^\w+$', LabelName):
         return True
     else:
