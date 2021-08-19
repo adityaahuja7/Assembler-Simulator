@@ -8,14 +8,19 @@ Registers = [0, 0, 0, 0, 0, 0, 0]
 # mapping of program counter and memory address
 pc_and_cycle = []
 
+exit=False
 
-OpCode = {"00000": "add", "00001": "sub", "00010": "movI", "00011": "movR", "00100": "ld",
+OpCode = {
+          "00000": "add", "00001": "sub", "00010": "movI", "00011": "movR", "00100": "ld",
           "00101": "st", "00110": "mul", "00111": "div", "01000": "rs", "01001": "ls",
           "01010": "xor", "01011": "or", "01100": "and", "01101": "inv", "01110": "cmp", "01111": "jmp",
-          "10000": "jlt", "10001": "jgt", "10010": "je", "10011": "halt"}
-# 8 bits required to represent memory address, one address contains a 16 bit number
-Memory_Heap = [] 
+          "10000": "jlt", "10001": "jgt", "10010": "je", "10011": "halt"
+         }
+
+# 8 bits required to represent memory address, one address contains a 16 bit binary
+Memory_Heap= [] 
 Dump = []
+Binary_input=[]
 pc = 0
 cycle = 1
 
@@ -52,26 +57,11 @@ def ConvertToDecimal(bin_val):
 
 
 def outputOneLine():
-    print("trolls3XOx")  # temporary print statement
+    print(ConvertToBinary16(pc))  # temporary print statement
 
 # 8 bit address and returns a 16 bit value as the data, 512 bytes stores 0 se initialized
 
 
-def memory(program_counter):
-    pass
-    # Dump.append(
-    #         (
-    #             ConvertToBinary8(program_counter),
-    #             ConvertToBinary16(Registers[0]),
-    #             ConvertToBinary16(Registers[1]),
-    #             ConvertToBinary16(Registers[2]),
-    #             ConvertToBinary16(Registers[3]),
-    #             ConvertToBinary16(Registers[4]),
-    #             ConvertToBinary16(Registers[5]),
-    #             ConvertToBinary16(Registers[6]),
-    #             ConvertToBinary16(flag)
-    #         )
-    #     )
 
 
 def initializeMem():
@@ -79,12 +69,17 @@ def initializeMem():
         Memory_Heap[i] = 0
     return
 
+def UpdatePC():
+    global pc
+    pc+=1
+
 
 # def program_counter:  # 8bit register that points to the current instruction
 
 
 # operations
 def add(instruction):
+    UpdatePC()
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
@@ -95,6 +90,7 @@ def add(instruction):
 
 
 def sub(instruction):
+    UpdatePC()
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
@@ -105,6 +101,7 @@ def sub(instruction):
 
 
 def mul(instruction):
+    UpdatePC()
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
@@ -115,6 +112,7 @@ def mul(instruction):
 
 
 def xor(instruction):
+    UpdatePC()
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
@@ -124,6 +122,7 @@ def xor(instruction):
 
 
 def BITor(instruction):
+    UpdatePC()
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
@@ -133,6 +132,7 @@ def BITor(instruction):
 
 
 def BITand(instruction):
+    UpdatePC()
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
@@ -142,6 +142,7 @@ def BITand(instruction):
 
 
 def rs(instruction):
+    UpdatePC()
     to_store = instruction[0:3]
     value = ConvertToDecimal(instruction[3:])
 
@@ -151,6 +152,7 @@ def rs(instruction):
 
 
 def ls(instruction):
+    UpdatePC()
     to_store = instruction[0:3]
     value = ConvertToDecimal(instruction[3:])
 
@@ -162,6 +164,7 @@ def ls(instruction):
 
 
 def movI(instruction):
+    UpdatePC()
     to_store = instruction[0:3]
     value = ConvertToDecimal(instruction[3:])
 
@@ -171,6 +174,7 @@ def movI(instruction):
 
 
 def movR(instruction):
+    UpdatePC()
     global flag
     to_store = instruction[0:3]
     reg_aux = ConvertToDecimal(instruction[3:])
@@ -184,6 +188,7 @@ def movR(instruction):
 
 
 def div(instruction):
+    UpdatePC()
     rega = ConvertToDecimal(instruction[0:3])
     regb = ConvertToDecimal(instruction[3:])
     quotient = Registers[rega]//Registers[regb]
@@ -195,6 +200,7 @@ def div(instruction):
 
 
 def inv(instruction):
+    UpdatePC()
     to_store = instruction[0:3]
     regb = ConvertToDecimal(instruction[3:])
     invert = 2**8-1-Registers[regb]
@@ -204,6 +210,7 @@ def inv(instruction):
 
 
 def cmp(instruction):
+    UpdatePC()
     global flag
     a = Registers[ConvertToDecimal(instruction[0:3])]
     b = Registers[ConvertToDecimal(instruction[3:])]
@@ -217,6 +224,7 @@ def cmp(instruction):
 
 
 def ld(instruction):
+    UpdatePC()
     to_store = ConvertToDecimal(instruction[:3])
     address = ConvertToDecimal(instruction[3:])
     Registers[to_store] = ConvertToDecimal(
@@ -225,6 +233,8 @@ def ld(instruction):
 
 
 def st(instruction):
+    global Memory_Heap
+    UpdatePC()
     source_reg = ConvertToDecimal(instruction[:3])
     address = ConvertToDecimal(instruction[3:])
     Memory_Heap[address] = ConvertToBinary16(Registers[source_reg])
@@ -265,11 +275,15 @@ def je(instruction):
         pc+=1
     return
 
-def execution_engine(instruction_bin):
-    global flag, cycle, pc
-    flag_reset()
+def execution_engine():
+    global flag, cycle, pc, Memory_Heap, exit
+    instruction_bin= Memory_Heap[pc]
     opcode = instruction_bin[:5]
     op = OpCode[opcode]
+
+    if (op!="jmp" and op!="jlt" and op!="jgt" and op!="je"):
+        flag_reset()
+    
     if (op == "add"):
         rest_bin = instruction_bin[7:]
         add(rest_bin)
@@ -350,10 +364,38 @@ def execution_engine(instruction_bin):
         rest_bin = instruction_bin[8:]
         je(rest_bin)
         outputOneLine()
-    elif (op=="halt"):
+    elif (op=="hlt"):
+        exit=True
         pass
 
+def TakeInput():
+    global pc,Binary_input
+    initializeMem()
+    bin_in=""
 
+    while (bin_in!="1001100000000000"):
+        bin_in=input()
+        Memory_Heap.append(bin_in)
+    
+    while(not exit):
+        execution_engine()
+
+
+#Space for output code
+    
+
+    
+
+        
+
+    
+
+          
+          
+          
+          
+          
+          
 #bonus
 def scatterPlot():
     global  pc_and_cycle #(pc,cycle)
@@ -368,29 +410,3 @@ def scatterPlot():
     plt.show()
     
 
-if (__name__ == "__main__"):
-    initializeMem()
-    while(bin_inst != "1001100000000000"):
-        pass
-        bin_inst = input()
-    #     Memory_Heap.append(bin_inst)
-    # for bin_inst in Memory_Heap:
-    #     execution_engine(bin_inst)
-    #     memory(pc)
-    #     pc_and_cycle.append((pc,cycle))
-    #     pc += 1
-    #     cycle += 1
-    # for i in Dump:
-    #     for j in i:
-    #         print(j, end = "        ")
-    #     print()
-    # for i in Memory_Heap:
-    #     print(i)
-        
-        
-        
-        
-# pc, registers
-#..... 
-#heap(Dump) #000  0 000 0 0 00
-#01010010 0101010 0 010010 ... hlt .. 0 0 0 00  0 0 0
