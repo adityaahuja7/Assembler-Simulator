@@ -1,5 +1,3 @@
-import re
-import sys
 import matplotlib.pyplot as plt
 #Registers and flags
 flag = 0
