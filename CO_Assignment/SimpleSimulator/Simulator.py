@@ -65,7 +65,6 @@ def outputOneLine():
         ConvertToBinary16(flag),
         sep="   "
     )
-    print(cycle)
     pc_and_cycle.append((pc, cycle))
     cycle += 1
 
