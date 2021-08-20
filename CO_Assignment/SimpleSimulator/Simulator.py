@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 # Registers and flags
 flag = 0
@@ -19,7 +19,7 @@ OpCode = {
 # 8 bits required to represent memory address, one address contains a 16 bit binary
 Memory_Heap = []
 Binary_input = []
-pc = -1
+pc = 0
 cycle = 1
 
 
@@ -63,7 +63,7 @@ def outputOneLine():
         ConvertToBinary16(Registers[5]),
         ConvertToBinary16(Registers[6]),
         ConvertToBinary16(flag),
-        sep="   "
+        sep="        "
     )
     pc_and_cycle.append((pc, cycle))
     cycle += 1
@@ -89,7 +89,6 @@ def UpdatePC():
 
 # operations
 def add(instruction):
-    UpdatePC()
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
@@ -99,7 +98,6 @@ def add(instruction):
 
 
 def sub(instruction):
-    UpdatePC()
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
@@ -109,7 +107,6 @@ def sub(instruction):
 
 
 def mul(instruction):
-    UpdatePC()
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
@@ -119,7 +116,6 @@ def mul(instruction):
 
 
 def xor(instruction):
-    UpdatePC()
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
@@ -128,7 +124,6 @@ def xor(instruction):
 
 
 def BITor(instruction):
-    UpdatePC()
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
@@ -137,7 +132,6 @@ def BITor(instruction):
 
 
 def BITand(instruction):
-    UpdatePC()
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
@@ -146,27 +140,22 @@ def BITand(instruction):
 
 
 def rs(instruction):
-    UpdatePC()
     to_store = instruction[0:3]
     value = ConvertToDecimal(instruction[3:])
-
     Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(to_store)] // (2 ** value)
     return
 
 
 def ls(instruction):
-    UpdatePC()
     to_store = instruction[0:3]
     value = ConvertToDecimal(instruction[3:])
-
     Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(to_store)] * (2 ** value)
-    if (Registers[ConvertToDecimal(to_store)] > 255):
+    if (Registers[ConvertToDecimal(to_store)] > 2**16-1):
         Registers[ConvertToDecimal(to_store)] = 0
     return
 
 
 def movI(instruction):
-    UpdatePC()
     to_store = instruction[0:3]
     value = ConvertToDecimal(instruction[3:])
 
@@ -175,19 +164,18 @@ def movI(instruction):
 
 
 def movR(instruction):
-    UpdatePC()
     global flag
     to_store = instruction[0:3]
     reg_aux = ConvertToDecimal(instruction[3:])
     if (reg_aux == 7):
         Registers[ConvertToDecimal(to_store)] = flag
     else:
-        Registers[ConvertToDecimal(to_store)] = Registers[reg_aux].copy()
+        Registers[ConvertToDecimal(to_store)] = Registers[reg_aux]
     return
 
 
 def div(instruction):
-    UpdatePC()
+ 
     rega = ConvertToDecimal(instruction[0:3])
     regb = ConvertToDecimal(instruction[3:])
     quotient = Registers[rega] // Registers[regb]
@@ -199,16 +187,15 @@ def div(instruction):
 
 
 def inv(instruction):
-    UpdatePC()
     to_store = instruction[0:3]
     regb = ConvertToDecimal(instruction[3:])
-    invert = 2 ** 8 - 1 - Registers[regb]
+    invert = 2 ** 16 - 1 - Registers[regb]
     Registers[ConvertToDecimal(to_store)] = invert
     return
 
 
 def cmp(instruction):
-    UpdatePC()
+
     global flag
     a = Registers[ConvertToDecimal(instruction[0:3])]
     b = Registers[ConvertToDecimal(instruction[3:])]
@@ -222,7 +209,7 @@ def cmp(instruction):
 
 
 def ld(instruction):
-    UpdatePC()
+
     to_store = ConvertToDecimal(instruction[:3])
     address = ConvertToDecimal(instruction[3:])
     Registers[to_store] = ConvertToDecimal(ConvertToBinary16(Memory_Heap[address]))
@@ -231,7 +218,6 @@ def ld(instruction):
 
 def st(instruction):
     global Memory_Heap
-    UpdatePC()
     source_reg = ConvertToDecimal(instruction[:3])
     address = ConvertToDecimal(instruction[3:])
     Memory_Heap[address] = ConvertToBinary16(Registers[source_reg])
@@ -273,11 +259,11 @@ def je(instruction):
     else:
         pc += 1
     return
-
+    #-1 -> 0 -> 1 -> 2 
 
 def execution_engine():
     global flag, cycle, pc, Memory_Heap, halted
-    instruction_bin = Memory_Heap[pc+1]
+    instruction_bin = Memory_Heap[pc]
     opcode = instruction_bin[:5]
     op = OpCode[opcode]
 
@@ -288,66 +274,82 @@ def execution_engine():
         rest_bin = instruction_bin[7:]
         add(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "sub"):
         rest_bin = instruction_bin[7:]
         sub(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "mul"):
         rest_bin = instruction_bin[7:]
         mul(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "xor"):
         rest_bin = instruction_bin[7:]
         xor(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "or"):
         rest_bin = instruction_bin[7:]
         BITor(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "and"):
         rest_bin = instruction_bin[7:]
         BITand(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "rs"):
         rest_bin = instruction_bin[5:]
         rs(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "ls"):
         rest_bin = instruction_bin[5:]
         ls(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "movI"):
         rest_bin = instruction_bin[5:]
         movI(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "movR"):
         rest_bin = instruction_bin[10:]
         movR(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "movR"):
         rest_bin = instruction_bin[10:]
         movR(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "div"):
         rest_bin = instruction_bin[10:]
         div(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "inv"):
         rest_bin = instruction_bin[10:]
         inv(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "cmp"):
         rest_bin = instruction_bin[10:]
         cmp(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "ld"):
         rest_bin = instruction_bin[5:]
         ld(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "st"):
         rest_bin = instruction_bin[5:]
         st(rest_bin)
         outputOneLine()
+        UpdatePC()
     elif (op == "jmp"):
         rest_bin = instruction_bin[8:]
         jmp(rest_bin)
@@ -365,7 +367,6 @@ def execution_engine():
         je(rest_bin)
         outputOneLine()
     else:
-        UpdatePC()
         halted = True
         outputOneLine()
 
@@ -393,10 +394,10 @@ def scatterPlot():
     for i in pc_and_cycle:
         x_axis.append(i[1])
         y_axis.append(i[0])
-    plt.scatter(x_axis, y_axis, c="blue")
-    plt.xlabel("Cycles")
-    plt.ylabel("Program_Counter(Mem_Address)")
-    plt.show()
+    # plt.scatter(x_axis, y_axis, c="blue")
+    # plt.xlabel("Cycles")
+    # plt.ylabel("Program_Counter(Mem_Address)")
+    # plt.show()
 
 
 if __name__ == "__main__":
@@ -404,4 +405,4 @@ if __name__ == "__main__":
 
     for i in Memory_Heap:
         print(i)
-    scatterPlot()
+    # scatterPlot()
