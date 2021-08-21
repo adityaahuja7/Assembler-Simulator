@@ -428,4 +428,4 @@ if __name__ == "__main__":
     TakeInput()
     for i in Memory_Heap:
         print(i)
-    scatterPlot()
+#     scatterPlot()
