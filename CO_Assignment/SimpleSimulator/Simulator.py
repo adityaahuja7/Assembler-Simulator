@@ -363,7 +363,6 @@ def execution_engine():
         UpdatePC()
     elif (op == "jmp"):
         rest_bin = instruction_bin[8:]
-        flag_reset()
         outputOneLine()
         jmp(rest_bin)
     elif (op == "jlt"):
