@@ -1,4 +1,4 @@
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 # Registers and flags
 flag = 0
@@ -25,9 +25,12 @@ cycle = 1
 
 def checkOverflow(ind):
     global Registers, flag
-    if (Registers[ind] > 255 or Registers[ind] < 0):
+    if (Registers[ind] > 2**16-1 or Registers[ind] < 0):
         flag = 8
-        Registers[ind] = 0
+        if (Registers[ind] > 2**16-1):
+            Registers[ind] = int(ConvertToBinary16(Registers[ind]), 2)
+        else:
+            Registers[ind] = 0
     return
 
 
@@ -38,7 +41,15 @@ def flag_reset():  # resets flag do use this wherever necessary
 
 
 def ConvertToBinary16(dec_val):
-    binval = ('{0:016b}'.format(dec_val))
+    if (dec_val > 2**16-1):
+        bin_rep = str(bin(dec_val))
+        bin_rep = bin_rep[2::]
+        l = len(bin_rep)
+        bin_rep = bin_rep[l-16:l:]
+        binval = int(bin_rep, 2)
+        binval = ('{0:016b}'.format(binval))
+    else:
+        binval = ('{0:016b}'.format(dec_val))
     return binval
 
 
@@ -63,11 +74,10 @@ def outputOneLine():
         ConvertToBinary16(Registers[5]),
         ConvertToBinary16(Registers[6]),
         ConvertToBinary16(flag),
-        sep="        "
+        sep=" "
     )
     pc_and_cycle.append((pc, cycle))
     cycle += 1
-
 
 
 # 8 bit address and returns a 16 bit value as the data, 512 bytes stores 0 se initialized
@@ -92,7 +102,8 @@ def add(instruction):
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
-    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(reg1)] + Registers[ConvertToDecimal(reg2)]
+    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(
+        reg1)] + Registers[ConvertToDecimal(reg2)]
     checkOverflow(ConvertToDecimal(to_store))
     return
 
@@ -101,7 +112,8 @@ def sub(instruction):
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
-    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(reg1)] - Registers[ConvertToDecimal(reg2)]
+    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(
+        reg1)] - Registers[ConvertToDecimal(reg2)]
     checkOverflow(ConvertToDecimal(to_store))
     return
 
@@ -110,7 +122,8 @@ def mul(instruction):
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
-    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(reg1)] * Registers[ConvertToDecimal(reg2)]
+    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(
+        reg1)] * Registers[ConvertToDecimal(reg2)]
     checkOverflow(ConvertToDecimal(to_store))
     return
 
@@ -119,7 +132,8 @@ def xor(instruction):
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
-    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(reg1)] ^ Registers[ConvertToDecimal(reg2)]
+    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(
+        reg1)] ^ Registers[ConvertToDecimal(reg2)]
     return
 
 
@@ -127,7 +141,8 @@ def BITor(instruction):
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
-    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(reg1)] | Registers[ConvertToDecimal(reg2)]
+    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(
+        reg1)] | Registers[ConvertToDecimal(reg2)]
     return
 
 
@@ -135,30 +150,33 @@ def BITand(instruction):
     to_store = instruction[0:3]
     reg1 = instruction[3:6]
     reg2 = instruction[6:9]
-    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(reg1)] & Registers[ConvertToDecimal(reg2)]
+    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(
+        reg1)] & Registers[ConvertToDecimal(reg2)]
     return
 
 
 def rs(instruction):
     to_store = instruction[0:3]
     value = ConvertToDecimal(instruction[3:])
-    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(to_store)] // (2 ** value)
+    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(
+        to_store)] // (2 ** value)
     return
 
 
 def ls(instruction):
     to_store = instruction[0:3]
     value = ConvertToDecimal(instruction[3:])
-    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(to_store)] * (2 ** value)
+    Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(
+        to_store)] * (2 ** value)
     if (Registers[ConvertToDecimal(to_store)] > 2**16-1):
-        Registers[ConvertToDecimal(to_store)] = 0
+        Registers[ConvertToDecimal(to_store)] = int(
+            ConvertToBinary16(to_store), 2)
     return
 
 
 def movI(instruction):
     to_store = instruction[0:3]
     value = ConvertToDecimal(instruction[3:])
-
     Registers[ConvertToDecimal(to_store)] = value
     return
 
@@ -175,14 +193,12 @@ def movR(instruction):
 
 
 def div(instruction):
- 
     rega = ConvertToDecimal(instruction[0:3])
     regb = ConvertToDecimal(instruction[3:])
     quotient = Registers[rega] // Registers[regb]
     remainder = Registers[rega] % Registers[regb]
     Registers[0] = quotient
     Registers[1] = remainder
-    checkOverflow()
     return
 
 
@@ -194,8 +210,7 @@ def inv(instruction):
     return
 
 
-def cmp(instruction):
-
+def compare(instruction):
     global flag
     a = Registers[ConvertToDecimal(instruction[0:3])]
     b = Registers[ConvertToDecimal(instruction[3:])]
@@ -209,10 +224,10 @@ def cmp(instruction):
 
 
 def ld(instruction):
-
     to_store = ConvertToDecimal(instruction[:3])
     address = ConvertToDecimal(instruction[3:])
-    Registers[to_store] = ConvertToDecimal(ConvertToBinary16(Memory_Heap[address]))
+    Registers[to_store] = ConvertToDecimal(
+        ConvertToBinary16(Memory_Heap[address]))
     return
 
 
@@ -259,7 +274,7 @@ def je(instruction):
     else:
         pc += 1
     return
-    #-1 -> 0 -> 1 -> 2 
+
 
 def execution_engine():
     global flag, cycle, pc, Memory_Heap, halted
@@ -267,9 +282,8 @@ def execution_engine():
     opcode = instruction_bin[:5]
     op = OpCode[opcode]
 
-    if (op != "jmp" and op != "jlt" and op != "jgt" and op != "je"):
+    if (op != "jlt" and op != "jgt" and op != "je"):
         flag_reset()
-
     if (op == "add"):
         rest_bin = instruction_bin[7:]
         add(rest_bin)
@@ -320,11 +334,6 @@ def execution_engine():
         movR(rest_bin)
         outputOneLine()
         UpdatePC()
-    elif (op == "movR"):
-        rest_bin = instruction_bin[10:]
-        movR(rest_bin)
-        outputOneLine()
-        UpdatePC()
     elif (op == "div"):
         rest_bin = instruction_bin[10:]
         div(rest_bin)
@@ -337,7 +346,7 @@ def execution_engine():
         UpdatePC()
     elif (op == "cmp"):
         rest_bin = instruction_bin[10:]
-        cmp(rest_bin)
+        compare(rest_bin)
         outputOneLine()
         UpdatePC()
     elif (op == "ld"):
@@ -358,14 +367,17 @@ def execution_engine():
         rest_bin = instruction_bin[8:]
         jlt(rest_bin)
         outputOneLine()
+        flag_reset()
     elif (op == "jgt"):
         rest_bin = instruction_bin[8:]
         jgt(rest_bin)
         outputOneLine()
+        flag_reset()
     elif (op == "je"):
         rest_bin = instruction_bin[8:]
         je(rest_bin)
         outputOneLine()
+        flag_reset()
     else:
         halted = True
         outputOneLine()
@@ -394,15 +406,14 @@ def scatterPlot():
     for i in pc_and_cycle:
         x_axis.append(i[1])
         y_axis.append(i[0])
-    # plt.scatter(x_axis, y_axis, c="blue")
-    # plt.xlabel("Cycles")
-    # plt.ylabel("Program_Counter(Mem_Address)")
-    # plt.show()
+    plt.scatter(x_axis, y_axis, c="blue")
+    plt.xlabel("Cycles")
+    plt.ylabel("Program_Counter(Mem_Address)")
+    plt.show()
 
 
 if __name__ == "__main__":
     TakeInput()
-
     for i in Memory_Heap:
         print(i)
-    # scatterPlot()
+    scatterPlot()
