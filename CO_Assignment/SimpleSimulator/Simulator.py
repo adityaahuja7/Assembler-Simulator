@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 # Registers and flags
 flag = 0
@@ -410,18 +410,18 @@ def TakeInput():
         execution_engine()
 
 
-# bonus part
-def scatterPlot():
-    global pc_and_cycle  # (pc,cycle)
-    x_axis = []
-    y_axis = []
-    for i in pc_and_cycle:
-        x_axis.append(i[1])
-        y_axis.append(i[0])
-    plt.scatter(x_axis, y_axis, c="blue")
-    plt.xlabel("Cycles")
-    plt.ylabel("Program_Counter(Mem_Address)")
-    plt.show()
+# # bonus part
+# def scatterPlot():
+#     global pc_and_cycle  # (pc,cycle)
+#     x_axis = []
+#     y_axis = []
+#     for i in pc_and_cycle:
+#         x_axis.append(i[1])
+#         y_axis.append(i[0])
+#     plt.scatter(x_axis, y_axis, c="blue")
+#     plt.xlabel("Cycles")
+#     plt.ylabel("Program_Counter(Mem_Address)")
+#     plt.show()
 
 
 if __name__ == "__main__":
