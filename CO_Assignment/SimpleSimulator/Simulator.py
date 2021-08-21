@@ -361,22 +361,33 @@ def execution_engine():
         UpdatePC()
     elif (op == "jmp"):
         rest_bin = instruction_bin[8:]
-        jmp(rest_bin)
+        flag_reset()
         outputOneLine()
+        jmp(rest_bin)
     elif (op == "jlt"):
         rest_bin = instruction_bin[8:]
-        jlt(rest_bin)
+        temp=flag
+        flag=0
         outputOneLine()
+        flag=temp
+        jlt(rest_bin)
         flag_reset()
     elif (op == "jgt"):
         rest_bin = instruction_bin[8:]
-        jgt(rest_bin)
+        temp=flag
+        flag=0
         outputOneLine()
+        flag=temp
+        jgt(rest_bin)
         flag_reset()
     elif (op == "je"):
         rest_bin = instruction_bin[8:]
-        je(rest_bin)
+        #next 4 lines only for printing
+        temp = flag
+        flag = 0
         outputOneLine()
+        flag = temp
+        je(rest_bin)
         flag_reset()
     else:
         halted = True
