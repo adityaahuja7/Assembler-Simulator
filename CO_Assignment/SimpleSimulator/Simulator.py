@@ -85,7 +85,7 @@ def outputOneLine():
 
 def initializeMem():
     for j in range(256):
-        Memory_Heap.append("000000000000000")
+        Memory_Heap.append("0000000000000000")
     return
 
 
@@ -282,8 +282,9 @@ def execution_engine():
     opcode = instruction_bin[:5]
     op = OpCode[opcode]
 
-    if (op != "jlt" and op != "jgt" and op != "je"):
+    if (op!="movR" and op != "jlt" and op != "jgt" and op != "je"): #implementation based if condition
         flag_reset()
+        
     if (op == "add"):
         rest_bin = instruction_bin[7:]
         add(rest_bin)
@@ -332,6 +333,7 @@ def execution_engine():
     elif (op == "movR"):
         rest_bin = instruction_bin[10:]
         movR(rest_bin)
+        flag_reset()
         outputOneLine()
         UpdatePC()
     elif (op == "div"):
@@ -347,7 +349,7 @@ def execution_engine():
     elif (op == "cmp"):
         rest_bin = instruction_bin[10:]
         compare(rest_bin)
-        outputOneLine()
+        outputOneLine() 
         UpdatePC()
     elif (op == "ld"):
         rest_bin = instruction_bin[5:]
