@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 
 # Registers and flags
+#code
 flag = 0
 Registers = [0, 0, 0, 0, 0, 0, 0]
 
