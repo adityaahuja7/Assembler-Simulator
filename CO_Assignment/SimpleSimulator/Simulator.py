@@ -423,6 +423,7 @@ def scatterPlot():
     plt.xlabel("Cycles")
     plt.ylabel("Program_Counter(Mem_Address)")
     plt.show()
+    plt.savefig("graph.png")
 
 
 if __name__ == "__main__":
