@@ -1,7 +1,6 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 # Registers and flags
-#code
 flag = 0
 Registers = [0, 0, 0, 0, 0, 0, 0]
 
@@ -170,8 +169,7 @@ def ls(instruction):
     Registers[ConvertToDecimal(to_store)] = Registers[ConvertToDecimal(
         to_store)] * (2 ** value)
     if (Registers[ConvertToDecimal(to_store)] > 2**16-1):
-        Registers[ConvertToDecimal(to_store)] = int(
-            ConvertToBinary16(to_store), 2)
+        Registers[ConvertToDecimal(to_store)] = 0
     return
 
 
@@ -227,8 +225,7 @@ def compare(instruction):
 def ld(instruction):
     to_store = ConvertToDecimal(instruction[:3])
     address = ConvertToDecimal(instruction[3:])
-    Registers[to_store] = ConvertToDecimal(
-        ConvertToBinary16(Memory_Heap[address]))
+    Registers[to_store] = ConvertToDecimal(Memory_Heap[address])
     return
 
 
@@ -411,7 +408,7 @@ def TakeInput():
         execution_engine()
 
 
-# # bonus part
+# bonus part
 def scatterPlot():
     global pc_and_cycle  # (pc,cycle)
     x_axis = []
