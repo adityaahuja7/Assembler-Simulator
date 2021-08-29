@@ -57,11 +57,11 @@ OpType = {
 
 # Binary translation of different instruction types
 OpBin = {
-    "add": "00000", "mul": "00110", "sub": "00001", "xor": "01010", "or": "01011", "01100": "A",
+    "add": "00000", "mul": "00110", "sub": "00001", "xor": "01010", "or": "01011", "and": "01100",
     "movB": "00010", "rs": "01000", "ls": "01001",
     "movC": "00011", "div": "00111", "not": "01101", "cmp": "01110",
     "ld": "00100", "st": "00101",
-    "jmp": "01111", "jlt": "1000", "jgt": "10001", "je": "10010",
+    "jmp": "01111", "jlt": "10000", "jgt": "10001", "je": "10010",
     "hlt": "10011"
 }
 
@@ -119,7 +119,7 @@ def GetBinary(Cur):
         BinOut += RegBin[temp[3]]
 
     if (temp[0] == "and"):
-        BinOut += OpBin["add"]
+        BinOut += OpBin["and"]
         BinOut += "00"
         BinOut += RegBin[temp[1]]
         BinOut += RegBin[temp[2]]
@@ -249,7 +249,7 @@ def checkImm (a):
     return a.isdigit()
 
 def checkSyn(com):
-    return com in Registers.keys() or com in OpType.keys() or (com[0] == "$" and checkImm(com[1:])) or com[len(com)-1] == ":" or com == "var"
+    return com in Registers.keys() or com in OpType.keys() or (com[0] == "$" and checkImm(com[1:])) or com[len(com)-1] == ":" or com == "var" or com=="hlt"
 
 
 def error():
@@ -258,6 +258,7 @@ def error():
         for line, inst in Assembly_Input:
             if (len(inst) == 0):
                 continue
+
             # stores the instruction corresponding to a label
             elif (inst[0][len(inst[0])-1] == ":"):
                 x = inst[0][:len(inst[0])-1]
@@ -284,6 +285,7 @@ def error():
                 if (Hlt_Handle == True):
                     print("ERROR: Halt instruction is not the last instruction at line:", line)
                     return False
+
             # checks for variable errors and shows the appropriate output
             if (ins[0] == "var"):
                 if (LabelCheck(ins[1]) == False):
@@ -312,7 +314,7 @@ def error():
 
             else:
                 for t in ins:
-                    if (OpType[ins[0]]!="B" and not checkSyn(t)):
+                    if (not checkSyn(t)):
                         print("ERROR: Syntax error in instruction name or register name in line:", line)
                         return False
 
@@ -361,35 +363,44 @@ def error():
 
 
 def read():
-    global Assembly_Input, Instructions, variables, Labels
-    line = 0
-    temp = ""
-    Label_Flag=True
-    var_count=0
     try:
+        global Assembly_Input, Instructions, variables, Labels
+        line = 0
+        temp = ""
+        Label_Flag=True
+        var_count=0
+        
         while (True):
             temp = input().lstrip()
+
+            if (temp==""):
+                continue
+
             Assembly_Input.append(temp.split())
             if (temp != ""):
-                Typecheck = temp.split(" ")
+                Typecheck = temp.split()
                 if (Typecheck[0] == "var" and len(Typecheck)>1):
                     variables.append(Typecheck[1])
                     var_count+=1
 
                 elif (Typecheck[0][len(Typecheck[0])-1] == ":"):
-                    if (Typecheck[0][0:len(Typecheck[0])-1] in list(Labels.keys())):
+                    if (Typecheck[0][0:len(Typecheck[0])-1] in list(Labels.keys())):  #Used to check if multiple labels with same name exist
                         Label_Flag=False
+
+
                     Labels[Typecheck[0][0:len(Typecheck[0])-1]] = line
                     Instructions.append(temp[(len(Typecheck[0])+1):])
 
                 else:
                     Instructions.append(temp)
             line += 1
+
     except(EOFError):
         Assembly_Input = list(enumerate(Assembly_Input, start=1))
         Instructions = list(enumerate(Instructions, start=0))
         variables = dict(list(enumerate(variables, start=len(Instructions))))
         variables = {v: k for k, v in variables.items()}
+
 
     for i in Labels:
         Labels[i]-=var_count
